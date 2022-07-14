@@ -137,7 +137,7 @@ int main(void)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     
 
-    
+    // Shader program
     ShaderProgramSource source = ParseShader("Basic.shader");
     unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
     glUseProgram(shader);
