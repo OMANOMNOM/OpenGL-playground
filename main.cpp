@@ -111,9 +111,15 @@ int main(void)
     std::cout << glGetString(GL_VERSION) << std::endl;
 
     float positions[] = {
-        -0.5f, -0.5f,
-         0.5f, -0.5f,
-         0.5f,  0.5f,
+        -0.5f, -0.5f, //0
+         0.5f, -0.5f, //1
+         0.5f,  0.5f, //2
+        -0.5f,  0.5f, //3
+    };
+
+    unsigned int index[] = {
+    0,1,2,
+    2,3,0
     };
 
     unsigned int buffer; 
@@ -128,13 +134,20 @@ int main(void)
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 
+
+    unsigned int ibo;
+    glGenBuffers(1, &ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), index, GL_STATIC_DRAW);
+
+
     // So you've allocated data to the buffer, but now you need to specifiy what the data is with attributes
     // Attribute specifit the data in the buffer
     // firsttly enable a new attrivute
     // specifiy which data in the buffer belongs to which attributes
 
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    //glBindBuffer(GL_ARRAY_BUFFER, 0);
     
 
     // Shader program
@@ -148,7 +161,8 @@ int main(void)
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        //glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
 
