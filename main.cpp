@@ -123,6 +123,8 @@ int main(void)
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
 
+    glfwSwapInterval(1);
+
     if (glewInit() != GLEW_OK) {
         std::cout << "Error!" << std::endl;
     }
@@ -171,7 +173,13 @@ int main(void)
     // Shader program
     ShaderProgramSource source = ParseShader("Basic.shader");
     unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
-    glUseProgram(shader);
+    GLCall(glUseProgram(shader));
+
+    GLCall(int location = glGetUniformLocation(shader, "u_Color"));
+    ASSERT(location != -1);
+    GLCall(glUniform4f(location, 0.8f, 0.3f, 0.8f, 1.0f));
+    float redChannel = 0.0f;
+    float increment = 0.05f;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -179,10 +187,19 @@ int main(void)
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
+        GLCall(glUniform4f(location, redChannel, 0.3f, 0.8f, 1.0f));
+
+        if (redChannel > 1.0f)
+            increment = -0.05f;
+        else if (redChannel < 0.0f)
+            increment = 0.05f;
+
+        redChannel += increment;
+
         // Clear all the errors, then call draw functions
         GLClearError();
         // Here is the error, we use int instead of the correct unsigned int
-        GLCall(glDrawElements(GL_TRIANGLES, 6, GL_INT, nullptr));
+        GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
         // Get all the errors craeted from the previous function
         
 
