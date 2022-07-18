@@ -5,6 +5,25 @@
 #include <string>
 #include <sstream>
 
+#define ASSERT(x) if (!(x)) __debugbreak();
+#define GLCall(x) GLClearError();\
+    x;\
+    ASSERT(GLLogCall(#x, __FILE__, __LINE__ ))
+
+static void GLClearError() {
+    while (glGetError() != GL_NO_ERROR);
+}
+
+static bool GLLogCall(const char * funciton, const char* file, int line)
+{
+    while (GLenum error = glGetError())
+    {
+        std::cout << "[OpenGL Error] (" << error << "):" << funciton <<
+            " " << file << " : " << line << std::endl;
+        return false;
+    }
+    return true;
+}
 struct ShaderProgramSource {
     std::string VertexSource;
     std::string FragmentSource;
@@ -148,7 +167,6 @@ int main(void)
 
 
     //glBindBuffer(GL_ARRAY_BUFFER, 0);
-    
 
     // Shader program
     ShaderProgramSource source = ParseShader("Basic.shader");
@@ -161,8 +179,14 @@ int main(void)
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
-        //glDrawArrays(GL_TRIANGLES, 0, 6);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        // Clear all the errors, then call draw functions
+        GLClearError();
+        // Here is the error, we use int instead of the correct unsigned int
+        GLCall(glDrawElements(GL_TRIANGLES, 6, GL_INT, nullptr));
+        // Get all the errors craeted from the previous function
+        
+
+
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
 
