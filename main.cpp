@@ -112,6 +112,10 @@ int main(void)
     if (!glfwInit())
         return -1;
 
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
     /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
     if (!window)
@@ -122,13 +126,11 @@ int main(void)
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
-
     glfwSwapInterval(1);
 
     if (glewInit() != GLEW_OK) {
         std::cout << "Error!" << std::endl;
     }
-
     std::cout << glGetString(GL_VERSION) << std::endl;
 
     float positions[] = {
@@ -143,16 +145,18 @@ int main(void)
     2,3,0
     };
 
+    // Generate and bind vertex array 
+    unsigned int vao;
+    GLCall(glGenVertexArrays(1, &vao));
+    GLCall(glBindVertexArray(vao));
+
     unsigned int buffer; 
-    // Create 1 buffer with ID = buffer
     glGenBuffers(1, &buffer);
-    // Bind the buffer as a type array buffer. think of it as equiping a buffer
-    // Only draws the things that is bound
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    // Allocate mamory and data to said buffer
-    glBufferData(GL_ARRAY_BUFFER, 6 *2 * sizeof(float), positions, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 4 *2 * sizeof(float), positions, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0);
+    // This is the line that binds the current vertex buffer to the curently selected vertex array
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 
 
@@ -178,6 +182,12 @@ int main(void)
     GLCall(int location = glGetUniformLocation(shader, "u_Color"));
     ASSERT(location != -1);
     GLCall(glUniform4f(location, 0.8f, 0.3f, 0.8f, 1.0f));
+
+    GLCall(glBindVertexArray(0));
+    GLCall(glUseProgram(0));
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+
     float redChannel = 0.0f;
     float increment = 0.05f;
 
@@ -186,8 +196,22 @@ int main(void)
     {
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
-
+        GLCall(glUseProgram(shader));
         GLCall(glUniform4f(location, redChannel, 0.3f, 0.8f, 1.0f));
+        
+        //GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer));
+        
+        //glEnableVertexAttribArray(0);
+        //glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+        GLCall(glBindVertexArray(vao));
+
+        GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
+
+
+       
+
+        GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+
 
         if (redChannel > 1.0f)
             increment = -0.05f;
@@ -195,13 +219,6 @@ int main(void)
             increment = 0.05f;
 
         redChannel += increment;
-
-        // Clear all the errors, then call draw functions
-        GLClearError();
-        // Here is the error, we use int instead of the correct unsigned int
-        GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
-        // Get all the errors craeted from the previous function
-        
 
 
         /* Swap front and back buffers */
