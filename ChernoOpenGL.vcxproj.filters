@@ -55,8 +55,8 @@
     <ClInclude Include="VertexArray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VertextBufferElement.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="VertexBufferLayout.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

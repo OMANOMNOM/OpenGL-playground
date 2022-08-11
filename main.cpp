@@ -4,9 +4,12 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+
 #include "Renderer.h"
+
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "VertexArray.h"
 
 struct ShaderProgramSource {
     std::string VertexSource;
@@ -134,18 +137,13 @@ int main(void)
         };
 
         // Generate and bind vertex array 
-        unsigned int vao;
-        GLCall(glGenVertexArrays(1, &vao));
-        GLCall(glBindVertexArray(vao));
+                
 
-
+        VertexArray va;
         VertexBuffer vb(positions, 8 * sizeof(float));
-
-        // These lines bind the current vertex buffer to the curently selected vertex array
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
-
-
+        VertexBufferLayout layout;
+        layout.Push<float>(2);
+        va.AddBuffer(vb, layout);
         IndexBuffer ib(index, 6);
 
         // Shader program
@@ -175,7 +173,7 @@ int main(void)
             GLCall(glUniform4f(location, redChannel, 0.3f, 0.8f, 1.0f));
 
             // Remember you need to bind both the VAO and IB as the VAO just states the IBs configuration
-            GLCall(glBindVertexArray(vao));
+            va.Bind();
             GLCall(ib.Bind());
 
             GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
