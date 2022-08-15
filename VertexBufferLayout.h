@@ -18,10 +18,7 @@ struct VertextBufferElement {
 		ASSERT(false);
 		return 0;
 	}
-	VertextBufferElement() {
-	}
-	~VertextBufferElement() {
-	}
+
 };
 
 class VertexBufferLayout {
@@ -31,11 +28,12 @@ private:
 public:
 	VertexBufferLayout()
 		: m_Stride(0) {}
-
+	
 	template<typename T>
 	void Push(unsigned int count)
 	{
-		static_assert(false);
+		// I should add this back in tbh. 
+		//static_assert(false);
 	}
 
 	template<> 
@@ -59,5 +57,5 @@ public:
 
 	// TODO need to put a & somewhere in the line below
 	inline const std::vector<VertextBufferElement> GetElements() const { return m_Elements;  }
-	inline unsigned int GetStride() { return m_Stride;  }
+	inline unsigned int GetStride() const { return m_Stride;  }
 };
