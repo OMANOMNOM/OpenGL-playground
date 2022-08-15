@@ -8,10 +8,11 @@
 #include "Renderer.h"
 
 #include "VertexBuffer.h"
+#include "VertexBufferLayout.h"
 #include "IndexBuffer.h"
 #include "VertexArray.h"
 #include "shader.h"
-
+#include "Renderer.h"   
 
 int main(void)
 {
@@ -77,6 +78,8 @@ int main(void)
         ib.Unbind();
         va.Unbind();
         
+        Renderer renderer;
+
         float redChannel = 0.0f;
         float increment = 0.05f;
 
@@ -84,15 +87,12 @@ int main(void)
         while (!glfwWindowShouldClose(window))
         {
             /* Render here */
-            glClear(GL_COLOR_BUFFER_BIT);
+            renderer.Clear();
             shader.Bind();
             shader.SetUniform4f("u_Color", redChannel, 0.3f, 0.8f, 1.0f);
 
-            // Remember you need to bind both the VAO and IB as the VAO just states the IBs configuration
-            va.Bind();
-            GLCall(ib.Bind());
+            renderer.Draw(va, ib, shader);
 
-            GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
             if (redChannel > 1.0f)
                 increment = -0.05f;
             else if (redChannel < 0.0f)
