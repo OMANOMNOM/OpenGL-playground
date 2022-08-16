@@ -12,7 +12,8 @@
 #include "IndexBuffer.h"
 #include "VertexArray.h"
 #include "shader.h"
-#include "Renderer.h"   
+#include "Renderer.h" 
+#include "Texture.h"
 
 int main(void)
 {
@@ -48,10 +49,10 @@ int main(void)
     // otherwise glfw terminate would generate an error and the applcaiton wouldn't terminate.
     {
         float positions[] = {
-            -0.5f, -0.5f, //0
-             0.5f, -0.5f, //1
-             0.5f,  0.5f, //2
-            -0.5f,  0.5f, //3
+            -0.5f, -0.5f, 0.0f, 0.0f, //0
+             0.5f, -0.5f, 1.0f, 0.0f,//1
+             0.5f,  0.5f, 1.0f, 1.0f,//2
+            -0.5f,  0.5f, 0.0f, 1.0f//3
         };
 
         unsigned int index[] = {
@@ -59,10 +60,14 @@ int main(void)
         2,3,0
         };
 
+        GLCall(glEnable(GL_BLEND));
+        GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
         // Generate vertex array, buffer and element array
         VertexArray va;
-        VertexBuffer vb(positions, 8 * sizeof(float));
+        VertexBuffer vb(positions, 8 * 2 * sizeof(float));
         VertexBufferLayout layout;
+        layout.Push<float>(2);
         layout.Push<float>(2);
         va.AddBuffer(vb, layout);
         IndexBuffer ib(index, 6);
@@ -72,6 +77,9 @@ int main(void)
         shader.Bind();
         shader.SetUniform4f("u_Color", 0.8f, 0.3f, 0.8f, 1.0f);
         
+        Texture texture("Screenshot 2022-08-16 015037.png");
+        texture.Bind();
+        shader.SetUniform1i("u_Texture", 0);
         // Unbind everything
         shader.Unbind();
         vb.Unbind();
