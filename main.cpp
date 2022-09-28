@@ -89,49 +89,37 @@ int main(void)
         ImGui_ImplGlfwGL3_Init(window, true);
         ImGui::StyleColorsDark();
 
-        test::Test* test = nullptr;
-        //test::TestClearColor* test = nullptr;
+        test::Test* current = nullptr;
+        test::TestMenu* menu = new test::TestMenu(current);
+        current = menu; 
 
+        menu->RegisterTest<test::TestClearColor>("clear color");
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
         {
             /* Render here */
             renderer.Clear();
+
             ImGui_ImplGlfwGL3_NewFrame();
-
-            
-            if (test == nullptr)
+            if (current != nullptr)
             {
-                ImGui::Text("Hello, world!");                           // Display some text (you can use a format string too)
-                int currentItem;
-                ImGui::Combo("Test label", &currentItem, "item1\0item2\0item3\0item4\0item5\0item6\0item7\0item8\0item9\0item10\0", 3);
-                if (ImGui::Button("Load"))                            // Buttons return true when clicked (NB: most widgets return true when edited/activated
+                current->OnUpdate(0.0f);
+                current->OnRender();
+                ImGui::Begin("Test");
+                if (current != menu && ImGui::Button("<--"))
                 {
-                    //Create that test enviroment
-                    test = (test::Test*)getScene(currentItem);
+                    delete current;
+                    current = menu;
+
                 }
+                current->OnImGuiRender();
+                ImGui::End();
             }
-            else
-            {
-                // Render chosen test
-                test->OnUpdate(0.0f);
-                test->OnRender();
-                test->OnImGuiRender();
-
-            }
-            
-
-            
-
             
             ImGui::Render();
             ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
 
-
-            /* Swap front and back buffers */
             glfwSwapBuffers(window);
-
-            /* Poll for and process events */
             glfwPollEvents();
         }
 

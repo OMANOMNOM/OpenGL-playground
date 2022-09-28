@@ -72,6 +72,9 @@
     <ClCompile Include="TestClearColor.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="Test.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Basic.shader">
