@@ -20,6 +20,30 @@
 
 #include "imgui.h"
 #include "imgui_impl_glfw_gl3.h"
+#include "TestClearColor.h"
+#include "Test.h"
+
+test::Test* getScene(int selectedScene) {
+    std::cout << selectedScene;
+    test::Test* selection = nullptr;
+
+    switch (selectedScene) {
+    case 1:
+        selection = new test::TestClearColor();
+        break;
+    case 2:
+        std::cout << "Not a valid selection";
+        return nullptr;
+        selection = nullptr;
+
+        break;
+    default:
+        std::cout << "Not a valid selection";
+        selection = nullptr;
+    return selection;
+    }
+}
+
 int main(void)
 {
     GLFWwindow* window;
@@ -53,50 +77,11 @@ int main(void)
     // This makes sure all stack opengl stuff is destroyed before glfw terminate
     // otherwise glfw terminate would generate an error and the applcaiton wouldn't terminate.
     {
-        float positions[] = {
-             -50.0f,  -50.0f, 0.0f, 0.0f,//1
-             50.0f,  -50.0f, 1.0f, 0.0f,//2
-             50.0f,  50.0f, 1.0f, 1.0f,//3
-             -50.0f,  50.0f, 0.0f, 1.0f, //0
-        };
-
-        unsigned int index[] = {
-        0,1,2,
-        2,3,0
-        };
+        
 
         GLCall(glEnable(GL_BLEND));
         GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
-        // Generate vertex array, buffer and element array
-        VertexArray va;
-        VertexBuffer vb(positions, 8 * 2 * sizeof(float));
-        VertexBufferLayout layout;
-        layout.Push<float>(2);
-        layout.Push<float>(2);
-        va.AddBuffer(vb, layout);
-        IndexBuffer ib(index, 6);
-
-
-        glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
-        glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-
-
-        // Shader program
-        Shader shader("Basic.shader");
-        shader.Bind();
-        shader.SetUniform4f("u_Color", 0.8f, 0.3f, 0.8f, 1.0f);
-        
-        Texture texture("Screenshot 2022-08-16 015037.png");
-        texture.Bind();
-        shader.SetUniform1i("u_Texture", 0);
-        // Unbind everything
-        shader.Unbind();
-        vb.Unbind();
-        ib.Unbind();
-        va.Unbind();
-        
-      
 
         Renderer renderer;
 
@@ -104,58 +89,41 @@ int main(void)
         ImGui_ImplGlfwGL3_Init(window, true);
         ImGui::StyleColorsDark();
 
-        glm::vec3 translationA(200.0f, 200.0f, 0.0f);
-        glm::vec3 translationB(800.0f, 200.0f, 0.0f);
-        float redChannel = 0.0f;
-        float increment = 0.05f;
+        test::Test* test = nullptr;
+        //test::TestClearColor* test = nullptr;
 
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
         {
             /* Render here */
             renderer.Clear();
-
             ImGui_ImplGlfwGL3_NewFrame();
 
             
+            if (test == nullptr)
+            {
+                ImGui::Text("Hello, world!");                           // Display some text (you can use a format string too)
+                int currentItem;
+                ImGui::Combo("Test label", &currentItem, "item1\0item2\0item3\0item4\0item5\0item6\0item7\0item8\0item9\0item10\0", 3);
+                if (ImGui::Button("Load"))                            // Buttons return true when clicked (NB: most widgets return true when edited/activated
+                {
+                    //Create that test enviroment
+                    test = (test::Test*)getScene(currentItem);
+                }
+            }
+            else
+            {
+                // Render chosen test
+                test->OnUpdate(0.0f);
+                test->OnRender();
+                test->OnImGuiRender();
+
+            }
             
-            shader.Bind();
-            //shader.SetUniform4f("u_Color", redChannel, 0.3f, 0.8f, 1.0f);
+
             
-            {
-                glm::mat4 model = glm::translate(glm::mat4(1.0f), translationA);
-                glm::mat4 mvp = proj * view * model;
-                shader.SetUniformMat4f("u_MVP", mvp);
-                renderer.Draw(va, ib, shader);
-            }
 
-            {
-                glm::mat4 model = glm::translate(glm::mat4(1.0f), translationB);
-                glm::mat4 mvp = proj * view * model;
-                shader.SetUniformMat4f("u_MVP", mvp);
-                renderer.Draw(va, ib, shader);
-            }
-
-       
-
-            if (redChannel > 1.0f)
-                increment = -0.05f;
-            else if (redChannel < 0.0f)
-                increment = 0.05f;
-            redChannel += increment;
-
-            {
-                float f = 0.1f;
-                ImGui::SliderFloat3("Translation", &translationA.x, 0.0f, 960.0f);            // Edit 1 float using a slider from 0.0f to 1.0f    
-                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-            }
-
-            {
-                float f = 0.1f;
-                ImGui::SliderFloat3("Translation", &translationB.x, 0.0f, 960.0f);            // Edit 1 float using a slider from 0.0f to 1.0f    
-                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-            }
-
+            
             ImGui::Render();
             ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -167,7 +135,6 @@ int main(void)
             glfwPollEvents();
         }
 
-        shader.~Shader();
     }
 
     ImGui_ImplGlfwGL3_Shutdown();
